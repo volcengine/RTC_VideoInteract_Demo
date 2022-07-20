@@ -54,14 +54,14 @@
 4. 在 Xcode 中打开 `Pods/Development Pods/Core/BuildConfig.h` 文件
 	
 
-<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_dc40ca9fc5a2ce311a35105a1927893a" width="500px" >
+<img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_709fb27ed82f3d3eaaad36e1027a09a1" width="500px" >
 
 5. 填写 **LoginUrl**
 	
 
 当前你可以使用 **`http://rtc-test.bytedance.com/rtc_demo_special/login`** 作为测试服务器域名，仅提供跑通测试服务，无法保障正式需求。
 
-<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_327da9edb83823ce57b242a51119799f" width="500px" >
+<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_26187051b4ca386816a62d637b4a5195" width="500px" >
 
 6. **填写 APPID、APPKey、AccessKeyID 和 SecretAccessKey**
 	
@@ -91,13 +91,14 @@
 
 3.1 单击 Xcode 左侧导航栏中的 `VeRTC_Demo` 项目，单击 `TARGETS` 下的 `VeRTC_Demo` 项目，选择 **Signing & Capabilities** > **Automatically manage signing** 自动生成证书
 
-<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_b7448228749d08472160ece2d8901eb7" width="500px" >
+<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_df6ff59c20b42530f696646d08294cc1" width="500px" >
 
 3.2 在 **Team** 中选择 Personal Team。
 
 <img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_1f74db52dbf9825f2fabfcea207769e0" width="500px" >
 
 3.3 **修改 Bundle** **Identifier****。** 
+
 默认的 `vertc.veRTCDemo.ios` 已被注册， 将其修改为其他 Bundle ID，格式为 `vertc.xxx`。
 
 <img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_0159cf55b5a783d4875c89fdc075a3ab" width="500px" >
