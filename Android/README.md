@@ -33,7 +33,7 @@
 
 ### 步骤 3：构建工程
 
-1. 使用 Android Studio 打开该项目的`RTC_VideoInteract_Demo-master/Android/veRTC_Demo_Android` 文件夹
+1. 使用 Android Studio 打开该项目的`RTC_VideoChat_Demo-master/Android/veRTC_Demo_Android` 文件夹
 	
 
 2. 填写 **LoginUrl。** 
@@ -41,14 +41,14 @@
 
 进入 `scene-core/gradle.properties` 文件，填写 **LoginUrl**。
 
-当前你可以使用 **`http://rtc-test.bytedance.com/rtc_demo_special/login`** 作为测试服务器域名，仅提供跑通测试服务，无法保障正式需求。
+当前你可以使用 **`https://common.rtc.volcvideo.com/rtc_demo_special/login`** 作为测试服务器域名，仅提供跑通测试服务，无法保障正式需求。
 
 <img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_91dfc908f446421eb8b8c8ef7691392b" width="500px" >
 
 3. **填写 APPID、APPKey、AccessKeyID 和 SecretAccessKey**
 	
 
-进入根目录下 `gradle.properties`文件，填写 **APPID、APPKey、AccessKeyID、SecretAccessKey**。
+进入 `component/joinrtsparams` 目录下 `gradle.properties`文件，填写 **APPID、APPKey、AccessKeyID、SecretAccessKey**。
 
 > ACCOUNT\_ID 和 VOD\_SPACE 为录制相关功能配置参数，此 Demo 无录制功能，填 `1` 即可。
 

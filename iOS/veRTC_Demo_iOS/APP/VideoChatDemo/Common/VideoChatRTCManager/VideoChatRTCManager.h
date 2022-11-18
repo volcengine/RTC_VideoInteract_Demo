@@ -1,5 +1,5 @@
 #import "VideoChatRTCManager.h"
-#import <VolcEngineRTC/objc/rtc/ByteRTCEngineKit.h>
+#import <VolcEngineRTC/objc/ByteRTCVideo.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,7 +42,10 @@ typedef void(^VideoChatNetworkQualityChangeBlock)(VideoChatNetworkQualityStatus 
  * @param roomID roomID
  * @param uid uid
  */
-- (void)joinChannelWithToken:(NSString *)token roomID:(NSString *)roomID uid:(NSString *)uid;
+- (void)joinRTCRoomWithToken:(NSString *)token
+                      roomID:(NSString *)roomID
+                         uid:(NSString *)uid
+                    userRole:(BOOL)isHost;
 
 /*
  * Set user visibility

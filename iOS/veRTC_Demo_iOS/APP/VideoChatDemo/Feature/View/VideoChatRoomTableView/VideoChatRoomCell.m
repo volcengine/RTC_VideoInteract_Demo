@@ -2,18 +2,18 @@
 //  VideoChatRoomCell.m
 //  veRTC_Demo
 //
-//  Created by bytedance on 2021/5/18.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/5/18.
+//  
 //
 
 #import "VideoChatRoomCell.h"
-#import "VideoChatAvatarCompoments.h"
+#import "VideoChatAvatarComponent.h"
 
 @interface VideoChatRoomCell ()
 
 @property (nonatomic, strong) UIView *bgView;
 @property (nonatomic, strong) UILabel *hostroomIDLabel;
-@property (nonatomic, strong) VideoChatAvatarCompoments *avatarView;
+@property (nonatomic, strong) VideoChatAvatarComponent *avatarView;
 @property (nonatomic, strong) UILabel *roomIDLabel;
 @property (nonatomic, strong) UIImageView *iconImageView;
 @property (nonatomic, strong) UIImageView *peopleNumImageView;
@@ -28,7 +28,7 @@
     if (self) {
         self.backgroundColor = [UIColor clearColor];
         self.contentView.backgroundColor = [UIColor clearColor];
-        [self createUIComponents];
+        [self createUIComponent];
     }
     return self;
 }
@@ -43,7 +43,7 @@
 
 #pragma mark - Private Action
 
-- (void)createUIComponents {
+- (void)createUIComponent {
     [self.contentView addSubview:self.bgView];
     [self.bgView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.contentView).offset(16);
@@ -153,9 +153,9 @@
     return _hostroomIDLabel;
 }
 
-- (VideoChatAvatarCompoments *)avatarView {
+- (VideoChatAvatarComponent *)avatarView {
     if (!_avatarView) {
-        _avatarView = [[VideoChatAvatarCompoments alloc] init];
+        _avatarView = [[VideoChatAvatarComponent alloc] init];
         _avatarView.layer.cornerRadius = 20;
         _avatarView.layer.masksToBounds = YES;
         _avatarView.fontSize = 20;

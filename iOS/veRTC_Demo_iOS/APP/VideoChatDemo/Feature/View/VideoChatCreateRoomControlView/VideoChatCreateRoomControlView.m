@@ -2,8 +2,8 @@
 //  VideoChatCreateRoomControlView.m
 //  veRTC_Demo
 //
-//  Created by bytedance on 2021/10/21.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/10/21.
+//  
 //
 
 #import "VideoChatCreateRoomControlView.h"

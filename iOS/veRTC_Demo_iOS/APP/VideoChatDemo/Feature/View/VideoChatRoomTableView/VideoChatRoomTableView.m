@@ -2,17 +2,17 @@
 //  VideoChatRoomTableView.m
 //  veRTC_Demo
 //
-//  Created by bytedance on 2021/5/18.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/5/18.
+//  
 //
 
 #import "VideoChatRoomTableView.h"
-#import "VideoChatEmptyCompoments.h"
+#import "VideoChatEmptyComponent.h"
 
 @interface VideoChatRoomTableView () <UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, strong) UITableView *roomTableView;
-@property (nonatomic, strong) VideoChatEmptyCompoments *emptyCompoments;
+@property (nonatomic, strong) VideoChatEmptyComponent *emptyComponent;
 
 @end
 
@@ -38,9 +38,9 @@
     
     [self.roomTableView reloadData];
     if (dataLists.count <= 0) {
-        [self.emptyCompoments show];
+        [self.emptyComponent show];
     } else {
-        [self.emptyCompoments dismiss];
+        [self.emptyComponent dismiss];
     }
 }
 
@@ -84,12 +84,12 @@
     return _roomTableView;
 }
 
-- (VideoChatEmptyCompoments *)emptyCompoments {
-    if (!_emptyCompoments) {
-        _emptyCompoments = [[VideoChatEmptyCompoments alloc] initWithView:self
+- (VideoChatEmptyComponent *)emptyComponent {
+    if (!_emptyComponent) {
+        _emptyComponent = [[VideoChatEmptyComponent alloc] initWithView:self
                                                                   message:@"还没有人创建聊天室,快去创建吧"];
     }
-    return _emptyCompoments;
+    return _emptyComponent;
 }
 
 @end

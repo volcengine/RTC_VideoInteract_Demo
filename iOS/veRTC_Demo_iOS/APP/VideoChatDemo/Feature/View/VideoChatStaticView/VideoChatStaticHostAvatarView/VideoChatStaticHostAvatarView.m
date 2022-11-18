@@ -2,16 +2,16 @@
 //  VideoChatStaticHostAvatarView.m
 //  veRTC_Demo
 //
-//  Created by bytedance on 2021/5/19.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/5/19.
+//  
 //
 
 #import "VideoChatStaticHostAvatarView.h"
-#import "VideoChatAvatarCompoments.h"
+#import "VideoChatAvatarComponent.h"
 
 @interface VideoChatStaticHostAvatarView ()
 
-@property (nonatomic, strong) VideoChatAvatarCompoments *avatarView;
+@property (nonatomic, strong) VideoChatAvatarComponent *avatarView;
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *roomIDLabel;
 
@@ -69,9 +69,9 @@
     return _titleLabel;
 }
 
-- (VideoChatAvatarCompoments *)avatarView {
+- (VideoChatAvatarComponent *)avatarView {
     if (_avatarView == nil) {
-        _avatarView = [[VideoChatAvatarCompoments alloc] init];
+        _avatarView = [[VideoChatAvatarComponent alloc] init];
         _avatarView.layer.masksToBounds = YES;
         _avatarView.layer.cornerRadius = 16;
         _avatarView.fontSize = 16;

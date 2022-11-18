@@ -2,45 +2,42 @@
 //  VideoChatRoomViewController.m
 //  veRTC_Demo
 //
-//  Created by bytedance on 2021/5/18.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/5/18.
+//
 //
 
-#import "VideoChatRoomViewController.h"
-#import "VideoChatRoomViewController+SocketControl.h"
-#import "VideoChatStaticView.h"
-#import "VideoChatRoomBottomView.h"
-#import "VideoChatPeopleNumView.h"
-#import "VideoChatSeatCompoments.h"
-#import "VideoChatMusicCompoments.h"
-#import "VideoChatTextInputCompoments.h"
-#import "VideoChatRoomUserListCompoments.h"
-#import "VideoChatIMCompoments.h"
-#import "VideoChatRoomSettingCompoments.h"
 #import "BytedEffectProtocol.h"
-#import "VideoChatPKUserListComponents.h"
-#import "VideoChatPKComponents.h"
-#import "NetworkingTool.h"
+#import "Core.h"
+#import "VideoChatMusicComponent.h"
+#import "VideoChatPKComponent.h"
+#import "VideoChatPKUserListComponent.h"
+#import "VideoChatPeopleNumView.h"
+#import "VideoChatRoomBottomView.h"
+#import "VideoChatRoomSettingComponent.h"
+#import "VideoChatRoomUserListComponent.h"
+#import "VideoChatRoomViewController+SocketControl.h"
+#import "VideoChatRoomViewController.h"
+#import "VideoChatSeatComponent.h"
+#import "VideoChatStaticView.h"
+#import "VideoChatTextInputComponent.h"
 
-@interface VideoChatRoomViewController ()
-<
-VideoChatRoomBottomViewDelegate,
-VideoChatRTCManagerDelegate,
-VideoChatSeatDelegate
->
+@interface VideoChatRoomViewController () <
+    VideoChatRoomBottomViewDelegate,
+    VideoChatRTCManagerDelegate,
+    VideoChatSeatDelegate>
 
 @property (nonatomic, strong) UIImageView *bgImageImageView;
 @property (nonatomic, strong) VideoChatStaticView *staticView;
 @property (nonatomic, strong) VideoChatRoomBottomView *bottomView;
-@property (nonatomic, strong) VideoChatMusicCompoments *musicCompoments;
-@property (nonatomic, strong) VideoChatTextInputCompoments *textInputCompoments;
-@property (nonatomic, strong) VideoChatRoomUserListCompoments *userListCompoments;
-@property (nonatomic, strong) VideoChatRoomSettingCompoments *settingCompoments;
-@property (nonatomic, strong) BytedEffectProtocol *beautyCompoments;
-@property (nonatomic, strong) VideoChatIMCompoments *imCompoments;
-@property (nonatomic, strong) VideoChatSeatCompoments *seatCompoments;
-@property (nonatomic, strong) VideoChatPKUserListComponents *pkUserListComponents;
-@property (nonatomic, strong) VideoChatPKComponents *pkComponents;
+@property (nonatomic, strong) VideoChatMusicComponent *musicComponent;
+@property (nonatomic, strong) VideoChatTextInputComponent *textInputComponent;
+@property (nonatomic, strong) VideoChatRoomUserListComponent *userListComponent;
+@property (nonatomic, strong) VideoChatRoomSettingComponent *settingComponent;
+@property (nonatomic, strong) BytedEffectProtocol *beautyComponent;
+@property (nonatomic, strong) BaseIMComponent *imComponent;
+@property (nonatomic, strong) VideoChatSeatComponent *seatComponent;
+@property (nonatomic, strong) VideoChatPKUserListComponent *pkUserListComponent;
+@property (nonatomic, strong) VideoChatPKComponent *pkComponent;
 @property (nonatomic, strong) VideoChatRoomModel *roomModel;
 @property (nonatomic, strong) VideoChatUserModel *hostUserModel;
 @property (nonatomic, copy) NSString *rtcToken;
@@ -54,6 +51,8 @@ VideoChatSeatDelegate
 - (instancetype)initWithRoomModel:(VideoChatRoomModel *)roomModel {
     self = [super init];
     if (self) {
+        // 主持人初始化
+        // Host initialization
         _roomModel = roomModel;
         [[VideoChatRTCManager shareRtc] updateVideoConfigWithHost:NO];
     }
@@ -65,6 +64,8 @@ VideoChatSeatDelegate
                     hostUserModel:(VideoChatUserModel *)hostUserModel {
     self = [super init];
     if (self) {
+        // 观众初始化
+        // Audience initialization
         _hostUserModel = hostUserModel;
         _roomModel = roomModel;
         _rtcToken = rtcToken;
@@ -77,15 +78,27 @@ VideoChatSeatDelegate
     [UIApplication sharedApplication].idleTimerDisabled = YES;
     self.view.backgroundColor = [UIColor colorFromHexString:@"#394254"];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(clearRedNotification) name:KClearRedNotification object:nil];
-    
+
+    // 开启业务服务器监听
+    // Enable business server monitoring
     [self addSocketListener];
+
+    // 初始化UI
+    // Initialize UI
     [self addSubviewAndConstraints];
+
+    // 加入业务房间和RTC房间
+    // Join business room and RTC room
     [self joinRoom];
-    
-    [self.beautyCompoments resumeLocalEffect];
-    
+
+    // 初始化美颜组件
+    // Initialize the beauty component
+    [self.beautyComponent resumeLocalEffect];
+
+    // RTC首次/重连加房回调
+    // RTC first/reconnect to add room callback
     __weak typeof(self) weakSelf = self;
-    [VideoChatRTCManager shareRtc].rtcJoinRoomBlock = ^(NSString * _Nonnull roomId, NSInteger errorCode, NSInteger joinType) {
+    [VideoChatRTCManager shareRtc].rtcJoinRoomBlock = ^(NSString *_Nonnull roomId, NSInteger errorCode, NSInteger joinType) {
         [weakSelf receivedJoinRoom:roomId errorCode:errorCode joinType:joinType];
     };
 }
@@ -102,94 +115,25 @@ VideoChatSeatDelegate
 
 #pragma mark - Notification
 
-- (void)receivedJoinRoom:(NSString *)roomId
-               errorCode:(NSInteger)errorCode
-                joinType:(NSInteger)joinType {
-    if ([roomId isEqualToString:self.roomModel.roomID]) {
-        if (errorCode == 0) {
-
-        }
-        if (joinType != 0 && errorCode == 0) {
-            [self reconnectVideoChatRoom];
-        }
-        return;
-    }
-}
-
-- (void)reconnectVideoChatRoom {
-    [VideoChatRTMManager reconnectWithBlock:^(NSString * _Nonnull RTCToken,
-                                              VideoChatRoomModel * _Nonnull roomModel,
-                                              VideoChatUserModel * _Nonnull userModel,
-                                              VideoChatUserModel * _Nonnull hostUserModel,
-                                              NSArray<VideoChatSeatModel *> * _Nonnull seatList,
-                                              NSArray<VideoChatUserModel *> * _Nonnull anchorList,
-                                              NSArray<VideoChatUserModel *> * _Nonnull anchorInteractList,
-                                              RTMACKModel * _Nonnull model) {
-        
-        if (model.result) {
-            [self updateRoomViewWithData:RTCToken
-                               roomModel:roomModel
-                               userModel:userModel
-                           hostUserModel:hostUserModel
-                                seatList:seatList
-                              anchorList:anchorList];
-            
-            if ([self isHost] && anchorInteractList.count > 0) {
-                for (VideoChatUserModel *anchorModel in anchorInteractList) {
-                    if (![anchorModel.uid isEqualToString:self.hostUserModel.uid]) {
-                        [self.pkUserListComponents startForwardStream:anchorModel.roomID token:anchorModel.pkToken];
-                        break;
-                    }
-                    
-                }
-            }
-            
-            for (VideoChatSeatModel *seatModel in seatList) {
-                if ([seatModel.userModel.uid isEqualToString:userModel.uid]) {
-                    // Reconnect after disconnection, I need to turn on the microphone to collect
-                    self.settingCompoments.mic = userModel.mic == VideoChatUserMicOn;
-                    self.settingCompoments.camera = userModel.camera == VideoChatUserCameraOn;
-                    [[VideoChatRTCManager shareRtc] enableLocalAudio:self.settingCompoments.mic];
-                    [[VideoChatRTCManager shareRtc] enableLocalVideo:self.settingCompoments.camera];
-                    [[VideoChatRTCManager shareRtc] setUserVisibility:YES];
-                    
-                    break;
-                }
-            }
-        } else if (model.code == RTMStatusCodeUserIsInactive ||
-                   model.code == RTMStatusCodeRoomDisbanded ||
-                   model.code == RTMStatusCodeUserNotFound) {
-            [self hangUp:NO];
-        }
-    }];
-}
-
 - (void)clearRedNotification {
     [self.bottomView updateButtonStatus:VideoChatRoomBottomStatusPhone isRed:NO];
-    [self.userListCompoments updateWithRed:NO];
+    [self.userListComponent updateWithRed:NO];
 }
 
 #pragma mark - SocketControl
 
-
 - (void)receivedJoinUser:(VideoChatUserModel *)userModel
                    count:(NSInteger)count {
-    VideoChatIMModel *model = [[VideoChatIMModel alloc] init];
-    model.userModel = userModel;
-    model.isJoin = YES;
-    [self.imCompoments addIM:model];
+    [self addIMMessage:YES userModel:userModel];
     [self.staticView updatePeopleNum:count];
-    [self.userListCompoments update];
+    [self.userListComponent update];
 }
 
 - (void)receivedLeaveUser:(VideoChatUserModel *)userModel
                     count:(NSInteger)count {
-    VideoChatIMModel *model = [[VideoChatIMModel alloc] init];
-    model.userModel = userModel;
-    model.isJoin = NO;
-    [self.imCompoments addIM:model];
+    [self addIMMessage:NO userModel:userModel];
     [self.staticView updatePeopleNum:count];
-    [self.userListCompoments update];
+    [self.userListComponent update];
 }
 
 - (void)receivedFinishLive:(NSInteger)type roomID:(NSString *)roomID {
@@ -198,51 +142,51 @@ VideoChatSeatDelegate
     }
     [self hangUp:NO];
     if (type == 3) {
-        [[ToastComponents shareToastComponents] showWithMessage:@"直播间内容违规，直播间已被关闭" delay:0.8];
-    }
-    else if (type == 2 && [self isHost]) {
-        [[ToastComponents shareToastComponents] showWithMessage:@"本次体验时间已超过20mins" delay:0.8];
+        [[ToastComponent shareToastComponent] showWithMessage:@"直播间内容违规，直播间已被关闭" delay:0.8];
+    } else if (type == 2 && [self isHost]) {
+        [[ToastComponent shareToastComponent] showWithMessage:@"本次体验时间已超过20mins" delay:0.8];
     } else {
         if (![self isHost]) {
-            [[ToastComponents shareToastComponents] showWithMessage:@"直播间已结束" delay:0.8];
+            [[ToastComponent shareToastComponent] showWithMessage:@"直播间已结束" delay:0.8];
         }
     }
 }
 
 - (void)receivedJoinInteractWithUser:(VideoChatUserModel *)userModel
                               seatID:(NSString *)seatID {
-    
     self.chatRoomMode = VideoChatRoomModeChatRoom;
-    
+
     VideoChatSeatModel *seatModel = [[VideoChatSeatModel alloc] init];
     seatModel.status = 1;
     seatModel.userModel = userModel;
     seatModel.index = seatID.integerValue;
-    [self.seatCompoments addSeatModel:seatModel];
-    [self.userListCompoments update];
-    if ([userModel.uid isEqualToString:[LocalUserComponents userModel].uid]) {
+    [self.seatComponent addSeatModel:seatModel];
+    [self.userListComponent update];
+    if ([userModel.uid isEqualToString:[LocalUserComponent userModel].uid]) {
         [self.bottomView updateBottomLists:userModel];
-        [self.settingCompoments resetMicAndCameraStatus];
+
+        self.settingComponent.mic = (userModel.mic == VideoChatUserMicOn);
+        self.settingComponent.camera = (userModel.camera == VideoChatUserCameraOn);
         // RTC Start Audio Capture
         [[VideoChatRTCManager shareRtc] setUserVisibility:YES];
-        [[VideoChatRTCManager shareRtc] enableLocalAudio:YES];
-        [[VideoChatRTCManager shareRtc] enableLocalVideo:YES];
-        [[ToastComponents shareToastComponents] showWithMessage:@"你已上麦"];
+        [[VideoChatRTCManager shareRtc] enableLocalAudio:self.settingComponent.mic];
+        [[VideoChatRTCManager shareRtc] enableLocalVideo:self.settingComponent.camera];
+        [[ToastComponent shareToastComponent] showWithMessage:@"你已上麦"];
     }
-    
+
     //IM
-    VideoChatIMModel *model = [[VideoChatIMModel alloc] init];
-    NSString *message = [NSString stringWithFormat:@"%@已上麦",userModel.name];
+    BaseIMModel *model = [[BaseIMModel alloc] init];
+    NSString *message = [NSString stringWithFormat:@"%@已上麦", userModel.name];
     model.message = message;
-    [self.imCompoments addIM:model];
+    [self.imComponent addIM:model];
 }
 
 - (void)receivedLeaveInteractWithUser:(VideoChatUserModel *)userModel
                                seatID:(NSString *)seatID
                                  type:(NSInteger)type {
-    [self.seatCompoments removeUserModel:userModel];
-    [self.userListCompoments update];
-    if ([userModel.uid isEqualToString:[LocalUserComponents userModel].uid]) {
+    [self.seatComponent removeUserModel:userModel];
+    [self.userListComponent update];
+    if ([userModel.uid isEqualToString:[LocalUserComponent userModel].uid]) {
         [self.bottomView updateBottomLists:userModel];
         // RTC Stop Audio Capture
         [[VideoChatRTCManager shareRtc] setUserVisibility:NO];
@@ -250,17 +194,17 @@ VideoChatSeatDelegate
         [[VideoChatRTCManager shareRtc] enableLocalVideo:NO];
         [[VideoChatRTCManager shareRtc] updateCameraID:YES];
         if (type == 1) {
-            [[ToastComponents shareToastComponents] showWithMessage:@"你已被主播移出麦位"];
+            [[ToastComponent shareToastComponent] showWithMessage:@"你已被主播移出麦位"];
         } else if (type == 2) {
-            [[ToastComponents shareToastComponents] showWithMessage:@"你已下麦"];
+            [[ToastComponent shareToastComponent] showWithMessage:@"你已下麦"];
         }
     }
-    
+
     //IM
-    VideoChatIMModel *model = [[VideoChatIMModel alloc] init];
-    NSString *message = [NSString stringWithFormat:@"%@已下麦",userModel.name];
+    BaseIMModel *model = [[BaseIMModel alloc] init];
+    NSString *message = [NSString stringWithFormat:@"%@已下麦", userModel.name];
     model.message = message;
-    [self.imCompoments addIM:model];
+    [self.imComponent addIM:model];
 }
 
 - (void)receivedSeatStatusChange:(NSString *)seatID
@@ -269,47 +213,47 @@ VideoChatSeatDelegate
     seatModel.status = type;
     seatModel.userModel = nil;
     seatModel.index = seatID.integerValue;
-    [self.seatCompoments updateSeatModel:seatModel];
+    [self.seatComponent updateSeatModel:seatModel];
 }
 
 - (void)receivedMediaStatusChangeWithUser:(VideoChatUserModel *)userModel
                                    seatID:(NSString *)seatID
                                       mic:(NSInteger)mic
                                    camera:(NSInteger)camera {
-    if (self.chatRoomMode == VideoChatRoomModePK) {
-        [self.pkComponents updateUserModel:userModel];
-        if ([userModel.uid isEqualToString:self.hostUserModel.uid]) {
-            self.seatCompoments.hostUserModel = userModel;
-        }
+    if ([userModel.uid isEqualToString:self.hostUserModel.uid]) {
+        self.hostUserModel = userModel;
     }
-    else {
+
+    if (self.chatRoomMode == VideoChatRoomModePK) {
+        [self.pkComponent updateUserModel:userModel];
+        if ([userModel.uid isEqualToString:self.hostUserModel.uid]) {
+            self.seatComponent.hostUserModel = userModel;
+        }
+    } else {
         VideoChatSeatModel *seatModel = [[VideoChatSeatModel alloc] init];
         seatModel.status = 1;
         seatModel.userModel = userModel;
         seatModel.index = seatID.integerValue;
-        [self.seatCompoments updateSeatModel:seatModel];
+        [self.seatComponent updateSeatModel:seatModel];
     }
-    
-    
-    if ([userModel.uid isEqualToString:[LocalUserComponents userModel].uid]) {
+
+    if ([userModel.uid isEqualToString:[LocalUserComponent userModel].uid]) {
         // RTC Mute/Unmute Audio Capture
         [[VideoChatRTCManager shareRtc] muteLocalAudio:userModel.mic == VideoChatUserMicOff];
         [[VideoChatRTCManager shareRtc] muteLocalVideo:userModel.camera == VideoChatUserCameraOff];
-        [self.settingCompoments updateUserMic:userModel.mic == VideoChatUserMicOn];
-        
+        [self.settingComponent updateUserMic:userModel.mic == VideoChatUserMicOn];
     }
 }
 
 - (void)receivedMessageWithUser:(VideoChatUserModel *)userModel
                         message:(NSString *)message {
-    if (![userModel.uid isEqualToString:[LocalUserComponents userModel].uid]) {
-        VideoChatIMModel *model = [[VideoChatIMModel alloc] init];
+    if (![userModel.uid isEqualToString:[LocalUserComponent userModel].uid]) {
+        BaseIMModel *model = [[BaseIMModel alloc] init];
         NSString *imMessage = [NSString stringWithFormat:@"%@：%@",
-                               userModel.name,
-                               message];
-        model.userModel = userModel;
+                                                         userModel.name,
+                                                         message];
         model.message = imMessage;
-        [self.imCompoments addIM:model];
+        [self.imComponent addIM:model];
     }
 }
 
@@ -319,18 +263,18 @@ VideoChatSeatDelegate
     alertModel.title = @"接受";
     AlertActionModel *cancelModel = [[AlertActionModel alloc] init];
     cancelModel.title = @"拒绝";
-    [[AlertActionManager shareAlertActionManager] showWithMessage:@"主播邀请你上麦，是否接受？" actions:@[cancelModel, alertModel]];
-    
+    [[AlertActionManager shareAlertActionManager] showWithMessage:@"主播邀请你上麦，是否接受？" actions:@[ cancelModel, alertModel ]];
+
     __weak __typeof(self) wself = self;
-    alertModel.alertModelClickBlock = ^(UIAlertAction * _Nonnull action) {
-        if ([action.title isEqualToString:@"接受"]) {
-            [wself loadDataWithReplyInvite:1];
-        }
+    alertModel.alertModelClickBlock = ^(UIAlertAction *_Nonnull action) {
+      if ([action.title isEqualToString:@"接受"]) {
+          [wself loadDataWithReplyInvite:1];
+      }
     };
-    cancelModel.alertModelClickBlock = ^(UIAlertAction * _Nonnull action) {
-        if ([action.title isEqualToString:@"拒绝"]) {
-            [wself loadDataWithReplyInvite:2];
-        }
+    cancelModel.alertModelClickBlock = ^(UIAlertAction *_Nonnull action) {
+      if ([action.title isEqualToString:@"拒绝"]) {
+          [wself loadDataWithReplyInvite:2];
+      }
     };
     [self performSelector:@selector(dismissAnchorInvite) withObject:nil afterDelay:5];
 }
@@ -339,8 +283,8 @@ VideoChatSeatDelegate
                                seatID:(NSString *)seatID {
     if ([self isHost]) {
         [self.bottomView updateButtonStatus:VideoChatRoomBottomStatusPhone isRed:YES];
-        [self.userListCompoments updateWithRed:YES];
-        [self.userListCompoments update];
+        [self.userListComponent updateWithRed:YES];
+        [self.userListComponent update];
     }
 }
 
@@ -348,83 +292,79 @@ VideoChatSeatDelegate
                                reply:(NSInteger)reply {
     if ([self isHost] && reply == 2) {
         NSString *message = [NSString stringWithFormat:@"观众%@拒绝了你的邀请", hostUserModel.name];
-        [[ToastComponents shareToastComponents] showWithMessage:message];
+        [[ToastComponent shareToastComponent] showWithMessage:message];
     }
-    
+
     if ([self isHost]) {
-        [self.userListCompoments resetInviteInteractionWaitingReplyStstus];
+        [self.userListComponent resetInviteInteractionWaitingReplyStstus];
     }
 }
 
 - (void)receivedMediaOperatWithUid:(NSInteger)mic camera:(NSInteger)camera {
     [VideoChatRTMManager updateMediaStatus:self.roomModel.roomID
-                                              mic:mic
-                                           camera:camera
-                                            block:^(RTMACKModel * _Nonnull model) {
-        
-    }];
+                                       mic:mic
+                                    camera:camera
+                                     block:^(RTMACKModel *_Nonnull model){
+
+                                     }];
     if (mic) {
-        [[ToastComponents shareToastComponents] showWithMessage:@"主播已解除对你的静音"];
+        [[ToastComponent shareToastComponent] showWithMessage:@"主播已解除对你的静音"];
     } else {
-        [[ToastComponents shareToastComponents] showWithMessage:@"你已被主播静音"];
+        [[ToastComponent shareToastComponent] showWithMessage:@"你已被主播静音"];
     }
 }
 
 - (void)receivedClearUserWithUid:(NSString *)uid {
     [self hangUp:NO];
-    [[ToastComponents shareToastComponents] showWithMessage:@"相同ID用户已登录，您已被强制下线！" delay:0.8];
+    [[ToastComponent shareToastComponent] showWithMessage:@"相同ID用户已登录，您已被强制下线！" delay:0.8];
 }
 
 - (void)hangUp:(BOOL)isServer {
     if (isServer) {
-        // socket api
         if ([self isHost]) {
             [VideoChatRTMManager finishLive:self.roomModel.roomID];
         } else {
             [VideoChatRTMManager leaveLiveRoom:self.roomModel.roomID];
         }
     }
-    // sdk api
     [[VideoChatRTCManager shareRtc] leaveChannel];
-    // ui
     [self navigationControllerPop];
 }
 
 - (void)receivedAnchorPKInvite:(VideoChatUserModel *)anchorModel {
-    [self.pkUserListComponents receivedAnchorPKInvite:anchorModel];
+    [self.pkUserListComponent receivedAnchorPKInvite:anchorModel];
 }
 
 - (void)receivedAnchorPKReply:(VideoChatPKReply)reply
                        roomID:(NSString *)roomID
                         token:(NSString *)token
                   anchorModel:(VideoChatUserModel *)anchorModel {
-    [self.pkUserListComponents resetPkWaitingReplyStstus];
-    
+    [self.pkUserListComponent resetPkWaitingReplyStstus];
+
     if (reply == VideoChatPKReplyAccept) {
-        [self.pkUserListComponents startForwardStream:roomID token:token];
-    }
-    else {
-        [[ToastComponents shareToastComponents] showWithMessage:[NSString stringWithFormat:@"%@拒绝了你的邀请", anchorModel.name]];
+        [self.pkUserListComponent startForwardStream:roomID token:token];
+    } else {
+        [[ToastComponent shareToastComponent] showWithMessage:[NSString stringWithFormat:@"%@拒绝了你的邀请", anchorModel.name]];
     }
 }
 
 - (void)receivedAnchorPKNewAnchorJoined:(VideoChatUserModel *)anchorModel {
     self.chatRoomMode = VideoChatRoomModePK;
-    self.pkComponents.anchorModel = anchorModel;
+    self.pkComponent.anchorModel = anchorModel;
     [self.bottomView updateBottomListsWithPK:YES];
 }
 
 - (void)receivedAnchorPKEnd {
     if ([self isHost]) {
-        if (self.pkComponents.activeEndPK) {
-            [[ToastComponents shareToastComponents] showWithMessage:[NSString stringWithFormat:@"你已结束与%@的连麦", self.pkComponents.anchorModel.name]];
+        if (self.pkComponent.activeEndPK) {
+            [[ToastComponent shareToastComponent] showWithMessage:[NSString stringWithFormat:@"你已结束与%@的连麦", self.pkComponent.anchorModel.name]];
         } else {
-            [[ToastComponents shareToastComponents] showWithMessage:[NSString stringWithFormat:@"%@结束了连麦", self.pkComponents.anchorModel.name]];
+            [[ToastComponent shareToastComponent] showWithMessage:[NSString stringWithFormat:@"%@结束了连麦", self.pkComponent.anchorModel.name]];
         }
-        [self.pkComponents rtcStopForwardStream];
-        self.pkComponents.activeEndPK = NO;
+        [self.pkComponent rtcStopForwardStream];
+        self.pkComponent.activeEndPK = NO;
     }
-    self.pkComponents.anchorModel = nil;
+    self.pkComponent.anchorModel = nil;
     [self.bottomView updateBottomListsWithPK:NO];
 }
 
@@ -433,28 +373,28 @@ VideoChatSeatDelegate
 }
 
 - (void)receivedMuteOtherAnchorRoomID:(NSString *)roomID otherAnchorUserID:(NSString *)otherAnchorUserID type:(VideoChatOtherAnchorMicType)type {
-    [self.pkComponents muteOtherAnchorRoomID:roomID otherAnchorUserID:otherAnchorUserID type:type];
+    [self.pkComponent muteOtherAnchorRoomID:roomID otherAnchorUserID:otherAnchorUserID type:type];
 }
 
 #pragma mark - Load Data
 
 - (void)loadDataWithJoinRoom {
     [[VideoChatRTCManager shareRtc] setDefaultVideoEncoderConfig];
-    
+
     __weak __typeof(self) wself = self;
     [VideoChatRTMManager joinLiveRoom:self.roomModel.roomID
-                             userName:[LocalUserComponents userModel].name
-                                block:^(NSString * _Nonnull RTCToken, VideoChatRoomModel * _Nonnull roomModel, VideoChatUserModel * _Nonnull userModel, VideoChatUserModel * _Nonnull hostUserModel,
+                             userName:[LocalUserComponent userModel].name
+                                block:^(NSString * _Nonnull RTCToken, VideoChatRoomModel *_Nonnull roomModel, VideoChatUserModel *_Nonnull userModel, VideoChatUserModel *_Nonnull hostUserModel,
                                         NSArray<VideoChatSeatModel *> * _Nonnull seatList,
                                             NSArray<VideoChatUserModel *> * _Nonnull anchorList,
                                             RTMACKModel * _Nonnull model) {
         if (NOEmptyStr(roomModel.roomID)) {
-            [wself updateRoomViewWithData:RTCToken
-                                roomModel:roomModel
-                                userModel:userModel
-                            hostUserModel:hostUserModel
-                                 seatList:seatList
-                               anchorList:anchorList];
+            [wself joinRTCRoomWithData:RTCToken
+                             roomModel:roomModel
+                             userModel:userModel
+                         hostUserModel:hostUserModel
+                              seatList:seatList
+                            anchorList:anchorList];
         } else {
             AlertActionModel *alertModel = [[AlertActionModel alloc] init];
             alertModel.title = @"确定";
@@ -468,143 +408,128 @@ VideoChatSeatDelegate
     }];
 }
 
-#pragma mark - VideoChatRoomBottomViewDelegate
-
-- (void)videoChatRoomBottomView:(VideoChatRoomBottomView *_Nonnull)videoChatRoomBottomView
-                     itemButton:(VideoChatRoomItemButton *_Nullable)itemButton
-                didSelectStatus:(VideoChatRoomBottomStatus)status {
-    if (status == VideoChatRoomBottomStatusInput) {
-        [self.textInputCompoments showWithRoomModel:self.roomModel];
-        __weak __typeof(self) wself = self;
-        self.textInputCompoments.clickSenderBlock = ^(NSString * _Nonnull text) {
-            VideoChatIMModel *model = [[VideoChatIMModel alloc] init];
-            NSString *message = [NSString stringWithFormat:@"%@：%@",
-                                 [LocalUserComponents userModel].name,
-                                 text];
-            model.message = message;
-            [wself.imCompoments addIM:model];
-        };
-    } else if (status == VideoChatRoomBottomStatusPhone) {
-        if (self.pkUserListComponents.isPKWaitingReply) {
-            [[ToastComponents shareToastComponents] showWithMessage:@"主播暂时无法连麦"];
-            return;
-        }
-        if ([self isHost]) {
-            if (self.pkComponents.anchorModel) {
-                [[ToastComponents shareToastComponents] showWithMessage:@"主播连线中，无法发起观众连线"];
-            }
-            else {
-                [self.userListCompoments showRoomModel:self.roomModel
-                                                seatID:@"-1"
-                                          dismissBlock:^{
-                    
-                }];
-            }
-        }
-        else {
-            [self.seatCompoments audienceApplyInteraction];
-        }
-        
-    } else if (status == VideoChatRoomBottomStatusBeauty) {
-        if (self.beautyCompoments) {
-            [self.beautyCompoments showWithType:EffectBeautyRoleTypeHost
-                                  fromSuperView:self.view
-                                   dismissBlock:^(BOOL result) {
-                
-            }];
-        } else {
-            [[ToastComponents shareToastComponents] showWithMessage:@"开源代码暂不支持美颜相关功能，体验效果请下载Demo"];
-        }
-    } else if (status == VideoChatRoomBottomStatusSet) {
-        [self.settingCompoments showWithType:VideoChatRoomSettingTypeGuest
-                               fromSuperView:self.view
-                                   roomModel:self.roomModel];
-    }
-    else if (status == VideoChatRoomBottomStatusPK) {
-        
-        if (self.userListCompoments.isInviteInteractionWaitingReply) {
-            [[ToastComponents shareToastComponents] showWithMessage:@"主播暂时无法连麦"];
-            return;
-        }
-        
-        if (itemButton.status == ButtonStatusActive) {
-            
-            AlertActionModel *alertModel = [[AlertActionModel alloc] init];
-            alertModel.title = @"确认";
-            AlertActionModel *cancelModel = [[AlertActionModel alloc] init];
-            cancelModel.title = @"取消";
-            [[AlertActionManager shareAlertActionManager] showWithMessage:@"当前主播连线中,确认结束连线?" actions:@[cancelModel, alertModel]];
-            
-            __weak typeof(self) weakSelf = self;
-            alertModel.alertModelClickBlock = ^(UIAlertAction * _Nonnull action) {
-                if ([action.title isEqualToString:@"确认"]) {
-                    [weakSelf.pkComponents reqeustStopForwardStream];
-                }
-            };
-            cancelModel.alertModelClickBlock = ^(UIAlertAction * _Nonnull action) {
-                if ([action.title isEqualToString:@"取消"]) {
-                }
-            };
-        }
-        else {
-            if (self.chatRoomMode == VideoChatRoomModeChatRoom) {
-                [[ToastComponents shareToastComponents] showWithMessage:@"主播暂时无法连麦"];
-            } else {
-                [self.pkUserListComponents showAnchorList];
-            }
-            
-        }
-    }
-}
-
-#pragma mark - VideoChatSeatDelegate
-
-- (void)VideoChatSeatCompoments:(VideoChatSeatCompoments *)VideoChatSeatCompoments
-                    clickButton:(VideoChatSeatModel *)seatModel
-                    sheetStatus:(VideoChatSheetStatus)sheetStatus {
-    if (sheetStatus == VideoChatSheetStatusInvite) {
-        [self.userListCompoments showRoomModel:self.roomModel
-                                        seatID:[NSString stringWithFormat:@"%ld", (long)seatModel.index]
-                                  dismissBlock:^{
-            
-        }];
-    }
-}
-
-#pragma mark - VideoChatRTCManagerDelegate
-
-- (void)VideoChatRTCManager:(VideoChatRTCManager *_Nonnull)VideoChatRTCManager reportAllAudioVolume:(NSDictionary<NSString *, NSNumber *> *_Nonnull)volumeInfo {
-    if (volumeInfo.count > 0) {
-        [self.seatCompoments updateSeatVolume:volumeInfo];
-    }
-}
-
-- (void)videoChatRTCManager:(VideoChatRTCManager *_Nonnull)videoChatRTCManager onFirstRemoteVideoUid:(NSString *)uid {
-    if (self.chatRoomMode == VideoChatRoomModePK) {
-        [self.pkComponents updateRenderView:uid];
-    }
-    else {
-        [self.seatCompoments updateSeatRender:uid];
-    }
-}
-
-#pragma mark - Network request
-
 - (void)loadDataWithReplyInvite:(NSInteger)type {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(dismissAnchorInvite) object:nil];
     [VideoChatRTMManager replyInvite:self.roomModel.roomID
                                       reply:type
                                       block:^(RTMACKModel * _Nonnull model) {
         if (!model.result) {
-            [[ToastComponents shareToastComponents] showWithMessage:model.message];
+            [[ToastComponent shareToastComponent] showWithMessage:model.message];
         }
     }];
 }
 
-- (void)dismissAnchorInvite {
-    [[AlertActionManager shareAlertActionManager] dismiss:^{
-        
-    }];
+#pragma mark - VideoChatRoomBottomViewDelegate
+
+- (void)videoChatRoomBottomView:(VideoChatRoomBottomView *_Nonnull)videoChatRoomBottomView
+                     itemButton:(VideoChatRoomItemButton *_Nullable)itemButton
+                didSelectStatus:(VideoChatRoomBottomStatus)status {
+    if (status == VideoChatRoomBottomStatusInput) {
+        [self.textInputComponent showWithRoomModel:self.roomModel];
+        __weak __typeof(self) wself = self;
+        self.textInputComponent.clickSenderBlock = ^(NSString *_Nonnull text) {
+          BaseIMModel *model = [[BaseIMModel alloc] init];
+          NSString *message = [NSString stringWithFormat:@"%@：%@",
+                                                         [LocalUserComponent userModel].name,
+                                                         text];
+          model.message = message;
+          [wself.imComponent addIM:model];
+        };
+    } else if (status == VideoChatRoomBottomStatusPhone) {
+        if (self.pkUserListComponent.isPKWaitingReply) {
+            [[ToastComponent shareToastComponent] showWithMessage:@"主播暂时无法连麦"];
+            return;
+        }
+        if ([self isHost]) {
+            if (self.pkComponent.anchorModel) {
+                [[ToastComponent shareToastComponent] showWithMessage:@"主播连线中，无法发起观众连线"];
+            } else {
+                [self.userListComponent showRoomModel:self.roomModel
+                                               seatID:@"-1"
+                                         dismissBlock:^{
+
+                                         }];
+            }
+        } else {
+            [self.seatComponent audienceApplyInteraction];
+        }
+
+    } else if (status == VideoChatRoomBottomStatusBeauty) {
+        if (self.beautyComponent) {
+            [self.beautyComponent showWithType:EffectBeautyRoleTypeHost
+                                 fromSuperView:self.view
+                                  dismissBlock:^(BOOL result){
+
+                                  }];
+        } else {
+            [[ToastComponent shareToastComponent] showWithMessage:@"开源代码暂不支持美颜相关功能，体验效果请下载Demo"];
+        }
+    } else if (status == VideoChatRoomBottomStatusSet) {
+        [self.settingComponent showWithType:VideoChatRoomSettingTypeGuest
+                              fromSuperView:self.view
+                                  roomModel:self.roomModel];
+    } else if (status == VideoChatRoomBottomStatusPK) {
+        if (self.userListComponent.isInviteInteractionWaitingReply) {
+            [[ToastComponent shareToastComponent] showWithMessage:@"主播暂时无法连麦"];
+            return;
+        }
+
+        if (itemButton.status == ButtonStatusActive) {
+            AlertActionModel *alertModel = [[AlertActionModel alloc] init];
+            alertModel.title = @"确认";
+            AlertActionModel *cancelModel = [[AlertActionModel alloc] init];
+            cancelModel.title = @"取消";
+            [[AlertActionManager shareAlertActionManager] showWithMessage:@"当前主播连线中,确认结束连线?" actions:@[ cancelModel, alertModel ]];
+
+            __weak typeof(self) weakSelf = self;
+            alertModel.alertModelClickBlock = ^(UIAlertAction *_Nonnull action) {
+                if ([action.title isEqualToString:@"确认"]) {
+                    [weakSelf.pkComponent reqeustStopForwardStream];
+                }
+            };
+            cancelModel.alertModelClickBlock = ^(UIAlertAction *_Nonnull action) {
+                if ([action.title isEqualToString:@"取消"]) {
+                }
+            };
+        } else {
+            if (self.chatRoomMode == VideoChatRoomModeChatRoom) {
+                [[ToastComponent shareToastComponent] showWithMessage:@"主播暂时无法连麦"];
+            } else {
+                [self.pkUserListComponent showAnchorList];
+            }
+        }
+    }
+}
+
+#pragma mark - VideoChatSeatDelegate
+
+- (void)VideoChatSeatComponent:(VideoChatSeatComponent *)VideoChatSeatComponent
+                   clickButton:(VideoChatSeatModel *)seatModel
+                   sheetStatus:(VideoChatSheetStatus)sheetStatus {
+    if (sheetStatus == VideoChatSheetStatusInvite) {
+        [self.userListComponent showRoomModel:self.roomModel
+                                       seatID:[NSString stringWithFormat:@"%ld", (long)seatModel.index]
+                                 dismissBlock:^{
+
+                                 }];
+    }
+}
+
+#pragma mark - VideoChatRTCManagerDelegate
+
+- (void)videoChatRTCManager:(VideoChatRTCManager *_Nonnull)videoChatRTCManager reportAllAudioVolume:(NSDictionary<NSString *, NSNumber *> *_Nonnull)volumeInfo {
+    if (volumeInfo.count > 0) {
+        [self.seatComponent updateSeatVolume:volumeInfo];
+    }
+}
+
+- (void)videoChatRTCManager:(VideoChatRTCManager *_Nonnull)videoChatRTCManager
+      onFirstRemoteVideoUid:(NSString *)uid {
+    if (self.chatRoomMode == VideoChatRoomModePK) {
+        [self.pkComponent updateRenderView:uid];
+    } else {
+        [self.seatComponent updateSeatRender:uid];
+    }
 }
 
 #pragma mark - Private Action
@@ -614,81 +539,81 @@ VideoChatSeatDelegate
         [self loadDataWithJoinRoom];
         self.staticView.roomModel = self.roomModel;
     } else {
-        [self updateRoomViewWithData:self.rtcToken
-                           roomModel:self.roomModel
-                           userModel:self.hostUserModel
-                       hostUserModel:self.hostUserModel
-                            seatList:[self getDefaultSeatDataList]
-                          anchorList:nil];
+        [self joinRTCRoomWithData:self.rtcToken
+                        roomModel:self.roomModel
+                        userModel:self.hostUserModel
+                    hostUserModel:self.hostUserModel
+                         seatList:[self getDefaultSeatDataList]
+                       anchorList:nil];
     }
 }
 
-- (void)updateRoomViewWithData:(NSString *)rtcToken
-                     roomModel:(VideoChatRoomModel *)roomModel
-                     userModel:(VideoChatUserModel *)userModel
-                 hostUserModel:(VideoChatUserModel *)hostUserModel
-                      seatList:(NSArray<VideoChatSeatModel *> *)seatList
-              anchorList:(NSArray<VideoChatUserModel *> *)anchorList {
+- (void)joinRTCRoomWithData:(NSString *)rtcToken
+                  roomModel:(VideoChatRoomModel *)roomModel
+                  userModel:(VideoChatUserModel *)userModel
+              hostUserModel:(VideoChatUserModel *)hostUserModel
+                   seatList:(NSArray<VideoChatSeatModel *> *)seatList
+                 anchorList:(NSArray<VideoChatUserModel *> *)anchorList {
     _hostUserModel = hostUserModel;
     _roomModel = roomModel;
     _rtcToken = rtcToken;
+    BOOL isHost = (userModel.userRole == VideoChatUserRoleHost) ? YES : NO;
+    
     //Activate SDK
     [[VideoChatRTCManager shareRtc] setUserVisibility:userModel.userRole == VideoChatUserRoleHost];
     [VideoChatRTCManager shareRtc].delegate = self;
-    [[VideoChatRTCManager shareRtc] joinChannelWithToken:rtcToken
+    [[VideoChatRTCManager shareRtc] joinRTCRoomWithToken:rtcToken
                                                   roomID:self.roomModel.roomID
-                                                     uid:[LocalUserComponents userModel].uid];
-    if (userModel.userRole == VideoChatUserRoleHost) {
-        
-        self.settingCompoments.mic = userModel.mic == VideoChatUserMicOn;
-        self.settingCompoments.camera = userModel.camera == VideoChatUserCameraOn;
-        
+                                                     uid:[LocalUserComponent userModel].uid
+                                                userRole:isHost];
+    if (isHost) {
+        self.settingComponent.mic = userModel.mic == VideoChatUserMicOn;
+        self.settingComponent.camera = userModel.camera == VideoChatUserCameraOn;
         [[VideoChatRTCManager shareRtc] setUserVisibility:YES];
-        [[VideoChatRTCManager shareRtc] enableLocalAudio:self.settingCompoments.mic];
-        [[VideoChatRTCManager shareRtc] enableLocalVideo:self.settingCompoments.camera];
+        [[VideoChatRTCManager shareRtc] enableLocalAudio:self.settingComponent.mic];
+        [[VideoChatRTCManager shareRtc] enableLocalVideo:self.settingComponent.camera];
     }
     self.staticView.roomModel = self.roomModel;
     [self.bottomView updateBottomLists:userModel isPKing:anchorList.count >= 2];
-    
+
     if (roomModel.roomStatus == VideoChatRoomStatusLianmai) {
         self.chatRoomMode = VideoChatRoomModeChatRoom;
     } else {
         self.chatRoomMode = VideoChatRoomModePK;
     }
-    
-    self.pkComponents.hostModel = hostUserModel;
+
+    self.pkComponent.hostModel = hostUserModel;
     if (self.chatRoomMode == VideoChatRoomModePK) {
-        self.seatCompoments.loginUserModel = userModel;
-        self.seatCompoments.hostUserModel = hostUserModel;
-        [self.pkComponents updateRenderView:hostUserModel.uid];
+        self.seatComponent.loginUserModel = userModel;
+        self.seatComponent.hostUserModel = hostUserModel;
+        [self.pkComponent updateRenderView:hostUserModel.uid];
         BOOL hasOtherAnchor = NO;
         for (VideoChatUserModel *anchorModel in anchorList) {
             if (![anchorModel.uid isEqualToString:self.hostUserModel.uid]) {
-                self.pkComponents.anchorModel = anchorModel;
-                [self.pkComponents muteOtherAnchorRoomID:anchorModel.roomID
-                                       otherAnchorUserID:anchorModel.uid
-                                                    type:anchorModel.otherAnchorMicType];
+                self.pkComponent.anchorModel = anchorModel;
+                [self.pkComponent muteOtherAnchorRoomID:anchorModel.roomID
+                                      otherAnchorUserID:anchorModel.uid
+                                                   type:anchorModel.otherAnchorMicType];
                 hasOtherAnchor = YES;
                 break;
             }
         }
         if (!hasOtherAnchor) {
-            self.pkComponents.anchorModel = nil;
+            self.pkComponent.anchorModel = nil;
         }
+    } else {
+        [self.seatComponent showSeatView:seatList
+                          loginUserModel:userModel
+                           hostUserModel:hostUserModel];
     }
-    else {
-        [self.seatCompoments showSeatView:seatList
-                           loginUserModel:userModel
-                                hostUserModel:hostUserModel];
-    }
-    
+
     __weak __typeof(self) weakSelf = self;
     [[VideoChatRTCManager shareRtc] didChangeNetworkQuality:^(VideoChatNetworkQualityStatus status, NSString * _Nonnull uid) {
         dispatch_queue_async_safe(dispatch_get_main_queue(), ^{
             if (weakSelf.chatRoomMode == VideoChatRoomModePK) {
-                [weakSelf.pkComponents updateNetworkQuality:status uid:uid];
+                [weakSelf.pkComponent updateNetworkQuality:status uid:uid];
             } else {
-                [weakSelf.seatCompoments updateNetworkQuality:status uid:uid];
+                [weakSelf.seatComponent updateNetworkQuality:status uid:uid];
             }
         });
     }];
@@ -697,26 +622,22 @@ VideoChatSeatDelegate
 - (void)addSubviewAndConstraints {
     [self.view addSubview:self.bgImageImageView];
     [self.bgImageImageView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.edges.equalTo(self.view);
+      make.edges.equalTo(self.view);
     }];
-    
-    [self pkComponents];
+
+    [self pkComponent];
     [self staticView];
-//    [self.view addSubview:self.staticView];
-//    [self.staticView mas_makeConstraints:^(MASConstraintMaker *make) {
-//        make.edges.equalTo(self.view);
-//    }];
     
     [self.view addSubview:self.bottomView];
     [self.bottomView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.height.mas_equalTo([DeviceInforTool getVirtualHomeHeight] + 36 + 32);
-        make.left.equalTo(self.view).offset(16);
-        make.right.equalTo(self.view).offset(-16);
-        make.bottom.equalTo(self.view);
+      make.height.mas_equalTo([DeviceInforTool getVirtualHomeHeight] + 36 + 32);
+      make.left.equalTo(self.view).offset(16);
+      make.right.equalTo(self.view).offset(-16);
+      make.bottom.equalTo(self.view);
     }];
-    
-    [self imCompoments];
-    [self textInputCompoments];
+
+    [self imComponent];
+    [self textInputComponent];
 }
 
 - (void)showEndView {
@@ -750,7 +671,7 @@ VideoChatSeatDelegate
 }
 
 - (BOOL)isHost {
-    return [self.roomModel.hostUid isEqualToString:[LocalUserComponents userModel].uid];
+    return [self.roomModel.hostUid isEqualToString:[LocalUserComponent userModel].uid];
 }
 
 - (NSArray *)getDefaultSeatDataList {
@@ -769,28 +690,105 @@ VideoChatSeatDelegate
         return;
     }
     _chatRoomMode = chatRoomMode;
-    [self.pkComponents changeChatRoomMode:chatRoomMode];
-    [self.seatCompoments changeChatRoomMode:chatRoomMode];
-    [self.userListCompoments updateCloseChatRoom:chatRoomMode == VideoChatRoomModePK];
+    self.pkComponent.hostModel = self.hostUserModel;
+    self.seatComponent.hostUserModel = self.hostUserModel;
+    [self.pkComponent changeChatRoomMode:chatRoomMode];
+    [self.seatComponent changeChatRoomMode:chatRoomMode];
+    [self.userListComponent updateCloseChatRoom:chatRoomMode == VideoChatRoomModePK];
     self.bottomView.chatRoomMode = chatRoomMode;
-    
+
     if (chatRoomMode == VideoChatRoomModeChatRoom && [self isHost]) {
-        [self.userListCompoments changeChatRoomModeDismissUserListView];
-    }
-    else {
+        [self.userListComponent changeChatRoomModeDismissUserListView];
+    } else {
         if (![self isHost]) {
             [self.bottomView audienceResetBottomLists];
+            self.seatComponent.loginUserModel.status = VideoChatUserStatusDefault;
         }
     }
 }
 
+- (void)addIMMessage:(BOOL)isJoin
+           userModel:(VideoChatUserModel *)userModel {
+    NSString *unitStr = isJoin ? @"加入了房间" : @"离开房间";
+    BaseIMModel *imModel = [[BaseIMModel alloc] init];
+    imModel.message = [NSString stringWithFormat:@"%@ %@", userModel.name, unitStr];
+    [self.imComponent addIM:imModel];
+}
+
+- (void)receivedJoinRoom:(NSString *)roomId
+               errorCode:(NSInteger)errorCode
+                joinType:(NSInteger)joinType {
+    if ([roomId isEqualToString:self.roomModel.roomID]) {
+        if (errorCode == 0) {
+        }
+        if (joinType != 0 && errorCode == 0) {
+            [self reconnectVideoChatRoom];
+        }
+        return;
+    }
+}
+
+- (void)reconnectVideoChatRoom {
+    [VideoChatRTMManager reconnectWithBlock:^(NSString * _Nonnull RTCToken,
+                                              VideoChatRoomModel * _Nonnull roomModel,
+                                              VideoChatUserModel * _Nonnull userModel,
+                                              VideoChatUserModel * _Nonnull hostUserModel,
+                                              NSArray<VideoChatSeatModel *> * _Nonnull seatList,
+                                              NSArray<VideoChatUserModel *> * _Nonnull anchorList,
+                                              NSArray<VideoChatUserModel *> * _Nonnull anchorInteractList,
+                                              RTMACKModel * _Nonnull model) {
+        
+        if (model.result) {
+            [self joinRTCRoomWithData:RTCToken
+                            roomModel:roomModel
+                            userModel:userModel
+                        hostUserModel:hostUserModel
+                             seatList:seatList
+                           anchorList:anchorList];
+            
+            if ([self isHost] && anchorInteractList.count > 0) {
+                for (VideoChatUserModel *anchorModel in anchorInteractList) {
+                    if (![anchorModel.uid isEqualToString:self.hostUserModel.uid]) {
+                        [self.pkUserListComponent startForwardStream:anchorModel.roomID token:anchorModel.pkToken];
+                        break;
+                    }
+                    
+                }
+            }
+            
+            for (VideoChatSeatModel *seatModel in seatList) {
+                if ([seatModel.userModel.uid isEqualToString:userModel.uid]) {
+                    // Reconnect after disconnection, I need to turn on the microphone to collect
+                    self.settingComponent.mic = userModel.mic == VideoChatUserMicOn;
+                    self.settingComponent.camera = userModel.camera == VideoChatUserCameraOn;
+                    [[VideoChatRTCManager shareRtc] enableLocalAudio:self.settingComponent.mic];
+                    [[VideoChatRTCManager shareRtc] enableLocalVideo:self.settingComponent.camera];
+                    [[VideoChatRTCManager shareRtc] setUserVisibility:YES];
+                    
+                    break;
+                }
+            }
+        } else if (model.code == RTMStatusCodeUserIsInactive ||
+                   model.code == RTMStatusCodeRoomDisbanded ||
+                   model.code == RTMStatusCodeUserNotFound) {
+            [self hangUp:NO];
+        }
+    }];
+}
+
+- (void)dismissAnchorInvite {
+    [[AlertActionManager shareAlertActionManager] dismiss:^{
+
+    }];
+}
+
 #pragma mark - Getter
 
-- (VideoChatTextInputCompoments *)textInputCompoments {
-    if (!_textInputCompoments) {
-        _textInputCompoments = [[VideoChatTextInputCompoments alloc] init];
+- (VideoChatTextInputComponent *)textInputComponent {
+    if (!_textInputComponent) {
+        _textInputComponent = [[VideoChatTextInputComponent alloc] init];
     }
-    return _textInputCompoments;
+    return _textInputComponent;
 }
 
 - (VideoChatStaticView *)staticView {
@@ -808,12 +806,12 @@ VideoChatSeatDelegate
     return _staticView;
 }
 
-- (VideoChatSeatCompoments *)seatCompoments {
-    if (!_seatCompoments) {
-        _seatCompoments = [[VideoChatSeatCompoments alloc] initWithSuperView:self.view];
-        _seatCompoments.delegate = self;
+- (VideoChatSeatComponent *)seatComponent {
+    if (!_seatComponent) {
+        _seatComponent = [[VideoChatSeatComponent alloc] initWithSuperView:self.view];
+        _seatComponent.delegate = self;
     }
-    return _seatCompoments;
+    return _seatComponent;
 }
 
 - (VideoChatRoomBottomView *)bottomView {
@@ -824,57 +822,57 @@ VideoChatSeatDelegate
     return _bottomView;
 }
 
-- (VideoChatRoomUserListCompoments *)userListCompoments {
-    if (!_userListCompoments) {
-        _userListCompoments = [[VideoChatRoomUserListCompoments alloc] init];
+- (VideoChatRoomUserListComponent *)userListComponent {
+    if (!_userListComponent) {
+        _userListComponent = [[VideoChatRoomUserListComponent alloc] init];
     }
-    return _userListCompoments;
+    return _userListComponent;
 }
 
-- (VideoChatIMCompoments *)imCompoments {
-    if (!_imCompoments) {
-        _imCompoments = [[VideoChatIMCompoments alloc] initWithSuperView:self.view];
+- (BaseIMComponent *)imComponent {
+    if (!_imComponent) {
+        _imComponent = [[BaseIMComponent alloc] initWithSuperView:self.view];
     }
-    return _imCompoments;
+    return _imComponent;
 }
 
-- (VideoChatMusicCompoments *)musicCompoments {
-    if (!_musicCompoments) {
-        _musicCompoments = [[VideoChatMusicCompoments alloc] init];
+- (VideoChatMusicComponent *)musicComponent {
+    if (!_musicComponent) {
+        _musicComponent = [[VideoChatMusicComponent alloc] init];
     }
-    return _musicCompoments;
+    return _musicComponent;
 }
 
-- (BytedEffectProtocol *)beautyCompoments {
-    if (!_beautyCompoments) {
-        _beautyCompoments = [[BytedEffectProtocol alloc] initWithRTCEngineKit:[VideoChatRTCManager shareRtc].rtcEngineKit];
+- (BytedEffectProtocol *)beautyComponent {
+    if (!_beautyComponent) {
+        _beautyComponent = [[BytedEffectProtocol alloc] initWithRTCEngineKit:[VideoChatRTCManager shareRtc].rtcEngineKit];
     }
-    return _beautyCompoments;
+    return _beautyComponent;
 }
 
-- (VideoChatRoomSettingCompoments *)settingCompoments {
-    if (!_settingCompoments) {
-        _settingCompoments = [[VideoChatRoomSettingCompoments alloc] initWithHost:[self isHost]];
+- (VideoChatRoomSettingComponent *)settingComponent {
+    if (!_settingComponent) {
+        _settingComponent = [[VideoChatRoomSettingComponent alloc] initWithHost:[self isHost]];
         __weak typeof(self) weakSelf = self;
-        _settingCompoments.clickMusicBlock = ^{
-            [weakSelf.musicCompoments show];
+        _settingComponent.clickMusicBlock = ^{
+            [weakSelf.musicComponent show];
         };
     }
-    return _settingCompoments;
+    return _settingComponent;
 }
 
-- (VideoChatPKUserListComponents *)pkUserListComponents {
-    if (!_pkUserListComponents) {
-        _pkUserListComponents = [[VideoChatPKUserListComponents alloc] initWithRoomModel:self.roomModel];
+- (VideoChatPKUserListComponent *)pkUserListComponent {
+    if (!_pkUserListComponent) {
+        _pkUserListComponent = [[VideoChatPKUserListComponent alloc] initWithRoomModel:self.roomModel];
     }
-    return _pkUserListComponents;
+    return _pkUserListComponent;
 }
 
-- (VideoChatPKComponents *)pkComponents {
-    if (!_pkComponents) {
-        _pkComponents = [[VideoChatPKComponents alloc] initWithSuperView:self.view roomModel:self.roomModel];
+- (VideoChatPKComponent *)pkComponent {
+    if (!_pkComponent) {
+        _pkComponent = [[VideoChatPKComponent alloc] initWithSuperView:self.view roomModel:self.roomModel];
     }
-    return _pkComponents;
+    return _pkComponent;
 }
 
 - (UIImageView *)bgImageImageView {
@@ -890,9 +888,8 @@ VideoChatSeatDelegate
 - (void)dealloc {
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     [[AlertActionManager shareAlertActionManager] dismiss:^{
-        
+
     }];
 }
-
 
 @end

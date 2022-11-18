@@ -2,8 +2,8 @@
 //  VideoChatStaticView.m
 //  veRTC_Demo
 //
-//  Created by bytedance on 2021/11/29.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/11/29.
+//  
 //
 
 #import "VideoChatStaticView.h"
@@ -21,7 +21,7 @@
 
 @implementation VideoChatStaticView
 
-- (instancetype)initWithSuperView:(UIView *)superView; {
+- (instancetype)initWithSuperView:(UIView *)superView {
     self = [super init];
     if (self) {
         [superView addSubview:self.closeButton];

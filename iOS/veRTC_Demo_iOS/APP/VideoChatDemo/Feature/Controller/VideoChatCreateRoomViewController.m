@@ -2,8 +2,8 @@
 //  CreateRoomViewController.m
 //  veRTC_Demo
 //
-//  Created by bytedance on 2021/5/18.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/5/18.
+//  
 //
 
 #import "VideoChatCreateRoomViewController.h"
@@ -11,7 +11,7 @@
 #import "VideoChatCreateRoomTipView.h"
 #import "VideoChatCreateRoomControlView.h"
 #import "BytedEffectProtocol.h"
-#import "VideoChatRoomSettingCompoments.h"
+#import "VideoChatRoomSettingComponent.h"
 #import "VideoChatRTCManager.h"
 
 @interface VideoChatCreateRoomViewController () <VideoChatCreateRoomControlViewDelegate>
@@ -21,8 +21,8 @@
 @property (nonatomic, strong) UIButton *joinButton;
 @property (nonatomic, strong) VideoChatCreateRoomControlView *controlView;
 
-@property (nonatomic, strong) VideoChatRoomSettingCompoments *settingCompoments;
-@property (nonatomic, strong) BytedEffectProtocol *beautyCompoments;
+@property (nonatomic, strong) VideoChatRoomSettingComponent *settingComponent;
+@property (nonatomic, strong) BytedEffectProtocol *beautyComponent;
 
 @property (nonatomic, strong) VideoChatRoomModel *roomModel;
 @property (nonatomic, strong) VideoChatUserModel *userModel;
@@ -61,7 +61,7 @@
     }];
     
     // resume local render effect
-    [self.beautyCompoments resumeLocalEffect];
+    [self.beautyComponent resumeLocalEffect];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -72,9 +72,9 @@
 }
 
 - (void)joinButtonAction:(UIButton *)sender {
-    sender.userInteractionEnabled = NO;
+    [[ToastComponent shareToastComponent] showLoading];
     
-    [PublicParameterCompoments share].roomId = _roomModel.roomID;
+    [PublicParameterComponent share].roomId = _roomModel.roomID;
     __weak __typeof(self) wself = self;
     [VideoChatRTMManager startLive:_roomModel.roomID
                                     block:^(RTMACKModel * _Nonnull model) {
@@ -85,9 +85,9 @@
                                                  hostUserModel:wself.userModel];
             [wself.navigationController pushViewController:next animated:YES];
         } else {
-            [[ToastComponents shareToastComponents] showWithMessage:model.message];
+            [[ToastComponent shareToastComponent] showWithMessage:model.message];
         }
-        sender.userInteractionEnabled = YES;
+        [[ToastComponent shareToastComponent] dismiss];
     }];
 }
 
@@ -98,21 +98,21 @@
 }
 
 - (void)videoChatCreateRoomControlView:(VideoChatCreateRoomControlView *)videoChatCreateRoomControlView didClickedBeautyButton:(UIButton *)button {
-    if (self.beautyCompoments) {
+    if (self.beautyComponent) {
         self.controlView.hidden = YES;
         __weak __typeof(self) wself = self;
-        [self.beautyCompoments showWithType:EffectBeautyRoleTypeHost
+        [self.beautyComponent showWithType:EffectBeautyRoleTypeHost
                               fromSuperView:self.view
                                dismissBlock:^(BOOL result) {
             wself.controlView.hidden = NO;
         }];
     } else {
-        [[ToastComponents shareToastComponents] showWithMessage:@"开源代码暂不支持美颜相关功能，体验效果请下载Demo"];
+        [[ToastComponent shareToastComponent] showWithMessage:@"开源代码暂不支持美颜相关功能，体验效果请下载Demo"];
     }
 }
 
 - (void)videoChatCreateRoomControlView:(VideoChatCreateRoomControlView *)videoChatCreateRoomControlView didClickedSettingButton:(UIButton *)button {
-    [self.settingCompoments showWithType:VideoChatRoomSettingTypeCreateRoom
+    [self.settingComponent showWithType:VideoChatRoomSettingTypeCreateRoom
                            fromSuperView:self.view
                                roomModel:self.roomModel];
 }
@@ -195,18 +195,18 @@
     return _controlView;
 }
 
-- (BytedEffectProtocol *)beautyCompoments {
-    if (!_beautyCompoments) {
-        _beautyCompoments = [[BytedEffectProtocol alloc] initWithRTCEngineKit:[VideoChatRTCManager shareRtc].rtcEngineKit];
+- (BytedEffectProtocol *)beautyComponent {
+    if (!_beautyComponent) {
+        _beautyComponent = [[BytedEffectProtocol alloc] initWithRTCEngineKit:[VideoChatRTCManager shareRtc].rtcEngineKit];
     }
-    return _beautyCompoments;
+    return _beautyComponent;
 }
 
-- (VideoChatRoomSettingCompoments *)settingCompoments {
-    if (!_settingCompoments) {
-        _settingCompoments = [[VideoChatRoomSettingCompoments alloc] initWithHost:NO];
+- (VideoChatRoomSettingComponent *)settingComponent {
+    if (!_settingComponent) {
+        _settingComponent = [[VideoChatRoomSettingComponent alloc] initWithHost:NO];
     }
-    return _settingCompoments;
+    return _settingComponent;
 }
 
 - (void)dealloc {

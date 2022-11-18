@@ -2,8 +2,8 @@
 //  VideoChatRoomViewController.m
 //  veRTC_Demo
 //
-//  Created by bytedance on 2021/5/18.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/5/18.
+//  
 //
 
 #import "VideoChatRoomListsViewController.h"
@@ -71,7 +71,7 @@
                 wself.roomTableView.dataLists = roomList;
             } else {
                 wself.roomTableView.dataLists = @[];
-                [[ToastComponents shareToastComponents] showWithMessage:model.message];
+                [[ToastComponent shareToastComponent] showWithMessage:model.message];
             }
         }];
     }];
@@ -80,7 +80,7 @@
 #pragma mark - VideoChatRoomTableViewDelegate
 
 - (void)VideoChatRoomTableView:(VideoChatRoomTableView *)VideoChatRoomTableView didSelectRowAtIndexPath:(VideoChatRoomModel *)model {
-    [PublicParameterCompoments share].roomId = model.roomID;
+    [PublicParameterComponent share].roomId = model.roomID;
     VideoChatRoomViewController *next = [[VideoChatRoomViewController alloc]
                                          initWithRoomModel:model];
     [self.navigationController pushViewController:next animated:YES];
@@ -90,9 +90,9 @@
 
 - (void)createButtonAction {
     __weak __typeof(self) wself = self;
-    NSString *roomName = [NSString stringWithFormat:@"%@的直播间", [LocalUserComponents userModel].name];
+    NSString *roomName = [NSString stringWithFormat:@"%@的直播间", [LocalUserComponent userModel].name];
     [VideoChatRTMManager createRoom:roomName
-                                  userName:[LocalUserComponents userModel].name
+                                  userName:[LocalUserComponent userModel].name
                                bgImageName:@""
                                      block:^(NSString * _Nonnull RTCToken,
                                              VideoChatRoomModel * _Nonnull roomModel,
@@ -105,7 +105,7 @@
                                                        rtcToekn:RTCToken];
             [wself.navigationController pushViewController:next animated:YES];
         } else {
-            [[ToastComponents shareToastComponents] showWithMessage:model.message];
+            [[ToastComponent shareToastComponent] showWithMessage:model.message];
         }
     }];
 }
@@ -152,7 +152,7 @@
 
 - (void)dealloc {
     [[VideoChatRTCManager shareRtc] disconnect];
-    [PublicParameterCompoments clear];
+    [PublicParameterComponent clear];
 }
 
 

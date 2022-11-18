@@ -2,8 +2,8 @@
 //  VideoChatRoomBottomView.m
 //  quickstart
 //
-//  Created by bytedance on 2021/3/23.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/3/23.
+//  
 //
 
 #import "VideoChatRoomBottomView.h"
@@ -86,7 +86,7 @@
     if (VideoChatUserStatusActive == self.loginUserModel.status) {
         self.loginUserModel.status = VideoChatUserStatusDefault;
         [self updateBottomLists:self.loginUserModel isPKing:NO];
-        [[ToastComponents shareToastComponents] showWithMessage:@"主播已和你断开连线"];
+        [[ToastComponent shareToastComponent] showWithMessage:@"主播已和你断开连线"];
         
         [[VideoChatRTCManager shareRtc] enableLocalAudio:NO];
         [[VideoChatRTCManager shareRtc] enableLocalVideo:NO];

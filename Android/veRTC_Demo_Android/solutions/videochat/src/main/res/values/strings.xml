@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="video_chat_pk">主播连线中</string>
+    <string name="scene_video_chat">视频互动</string>
+    <string name="confirm">确认</string>
+    <string name="accept">接受</string>
+    <string name="reject">拒绝</string>
+    <string name="finish_live">结束直播</string>
+    <string name="room_main_message_empty_hint">发送空消息不能为空</string>
+</resources>

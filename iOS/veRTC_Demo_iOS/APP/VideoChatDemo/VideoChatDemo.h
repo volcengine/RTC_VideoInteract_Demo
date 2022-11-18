@@ -2,7 +2,7 @@
 //  VideoChatDemo.h
 //  VideoChatDemo
 //
-//  Created by bytedance on 2022/5/18.
+//  Created by on 2022/5/18.
 //
 
 #import "BaseHomeDemo.h"
