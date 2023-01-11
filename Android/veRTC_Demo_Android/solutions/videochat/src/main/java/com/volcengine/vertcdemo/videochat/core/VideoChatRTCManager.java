@@ -44,6 +44,7 @@ import com.volcengine.vertcdemo.videochat.bean.UserLeaveBroadcast;
 import com.volcengine.vertcdemo.videochat.bean.VideoChatUserInfo;
 import com.volcengine.vertcdemo.videochat.event.SDKAudioPropertiesEvent;
 import com.volcengine.vertcdemo.videochat.event.SDKNetStatusEvent;
+import com.volcengine.vertcdemo.videochat.event.VideoChatReconnectToRoomEvent;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -131,6 +132,9 @@ public class VideoChatRTCManager {
             super.onRoomStateChanged(roomId, uid, state, extraInfo);
             Log.d(TAG, String.format("onRoomStateChanged: %s, %s, %d, %s", roomId, uid, state, extraInfo));
             mRoomId = roomId;
+            if (isReconnectSuccess(state, extraInfo)) {
+                SolutionDemoEventManager.post(new VideoChatReconnectToRoomEvent());
+            }
         }
 
         @Override

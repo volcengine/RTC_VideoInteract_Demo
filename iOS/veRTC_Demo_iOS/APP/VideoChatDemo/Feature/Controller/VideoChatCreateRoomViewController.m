@@ -42,6 +42,7 @@
         _userModel = userModel;
         [[VideoChatRTCManager shareRtc] updateVideoConfigWithHost:YES];
         [[VideoChatRTCManager shareRtc] bingCanvasViewToUid:userModel.uid];
+        [[VideoChatRTCManager shareRtc] resetCamera];
         [[VideoChatRTCManager shareRtc] enableLocalVideo:YES];
     }
     return self;

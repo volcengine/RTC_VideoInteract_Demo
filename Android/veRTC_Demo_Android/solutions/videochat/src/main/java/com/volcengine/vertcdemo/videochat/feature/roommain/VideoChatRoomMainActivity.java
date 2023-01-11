@@ -71,6 +71,7 @@ import com.volcengine.vertcdemo.videochat.core.VideoChatDataManager;
 import com.volcengine.vertcdemo.videochat.core.VideoChatRTCManager;
 import com.volcengine.vertcdemo.videochat.core.VideoChatRTSClient;
 import com.volcengine.vertcdemo.videochat.event.AudioStatsEvent;
+import com.volcengine.vertcdemo.videochat.event.VideoChatReconnectToRoomEvent;
 import com.volcengine.vertcdemo.videochat.feature.roommain.fragment.VideoAnchorPkFragment;
 import com.volcengine.vertcdemo.videochat.feature.roommain.fragment.VideoChatRoomFragment;
 
@@ -403,6 +404,9 @@ public class VideoChatRoomMainActivity extends BaseActivity {
     }
 
     private void startChatRoom(JoinRoomResponse data) {
+        if (isFinishing()) {
+            return;
+        }
         mVideoChatFragment = new VideoChatRoomFragment();
         mVideoChatFragment.setICloseChatRoom(mCloseChatRoom);
         Bundle args = new Bundle();
@@ -472,7 +476,11 @@ public class VideoChatRoomMainActivity extends BaseActivity {
     }
 
     private void attemptLeave() {
-        if (getSelfUserInfo() == null || !getSelfUserInfo().isHost()) {
+        final VideoChatUserInfo selfUserInfo = getSelfUserInfo();
+        if (selfUserInfo == null || !selfUserInfo.isHost()) {
+            if (selfUserInfo != null && selfUserInfo.userStatus == USER_STATUS_INTERACT) {
+                SafeToast.show("你已下麦");
+            }
             finish();
             return;
         }
@@ -541,7 +549,7 @@ public class VideoChatRoomMainActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAudienceChangedBroadcast(AudienceChangedBroadcast event) {
-        String suffix = event.isJoin ? " 进入了房间" : " 退出了房间";
+        String suffix = event.isJoin ? " 加入了房间" : " 退出了房间";
         onReceivedMessage(event.userInfo.userName + suffix);
         mAudienceCountTv.setText(String.valueOf(event.audienceCount + 1));
     }
@@ -556,7 +564,7 @@ public class VideoChatRoomMainActivity extends BaseActivity {
         if (event.type == FinishLiveBroadcast.FINISH_TYPE_AGAINST) {
             message = "直播间内容违规，直播间已被关闭";
         } else if (event.type == FinishLiveBroadcast.FINISH_TYPE_TIMEOUT && isHost) {
-            message = "本次体验时间已超过20分钟";
+            message = "本场直播体验已超过20分钟";
         } else if (!isHost) {
             message = "直播间已结束";
         }
@@ -577,9 +585,12 @@ public class VideoChatRoomMainActivity extends BaseActivity {
         if (getRoomInfo() == null || !TextUtils.equals(event.roomId, getRoomInfo().roomId)) {
             return;
         }
-        SafeToast.show("主播已和你断开连线");
+        final VideoChatUserInfo selfUserInfo = getSelfUserInfo();
+        if (selfUserInfo.userStatus == USER_STATUS_INTERACT) {
+            SafeToast.show("主播已和你断开连线");
+        }
         mBizFl.post(VideoChatRoomMainActivity.this::closeChat);
-        if (!getSelfUserInfo().isHost()) {
+        if (!selfUserInfo.isHost()) {
             VideoChatRTCManager.ins().startMuteAudio(true);
         }
     }
@@ -681,12 +692,12 @@ public class VideoChatRoomMainActivity extends BaseActivity {
                             getRoomInfo().status = ROOM_STATUS_CHATTING;
                             VideoChatDataManager.ins().selfInviteStatus = INTERACT_STATUS_NORMAL;
                             mBottomOptionLayout.updateUIByRoleAndStatus(ROOM_STATUS_CHATTING, getSelfUserInfo().userRole, USER_STATUS_INTERACT);
+                            VideoChatUserInfo selfUserInfo = getSelfUserInfo();
+                            selfUserInfo.userStatus = USER_STATUS_INTERACT;
                             if (oldRoomStatus == ROOM_STATUS_CHATTING) {
                                 return;
                             }
                             JoinRoomResponse response = new JoinRoomResponse();
-                            VideoChatUserInfo selfUserInfo = getSelfUserInfo();
-                            selfUserInfo.userStatus = USER_STATUS_INTERACT;
                             response.roomInfo = getRoomInfo();
                             response.userInfo = getSelfUserInfo();
                             response.hostInfo = getHostUserInfo();
@@ -754,6 +765,13 @@ public class VideoChatRoomMainActivity extends BaseActivity {
             isLeaveByKickOut = true;
             finish();
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onReconnectToRoom(VideoChatReconnectToRoomEvent event) {
+        final String roomId = getRoomInfo().roomId;
+        VideoChatRTCManager.ins().getRTSClient()
+                .reconnectToServer(roomId, mReconnectCallback);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -33,49 +33,24 @@
 
 ### 步骤 3：构建工程
 
-1. 使用 Android Studio 打开该项目的`RTC_VideoChat_Demo-master/Android/veRTC_Demo_Android` 文件夹
+1. 使用 Android Studio 打开该项目的`RTC_VideoInteract_Demo/Android/veRTC_Demo_Android` 文件夹
 	
 
-2. 填写 **LoginUrl。** 
-	
+2. 填写 **HEAD_URL。** <br>
+    进入 `scene-core/gradle.properties` 文件，填写 **HEAD_URL**。<br>
+    当前你可以使用 **`https://common.rtc.volcvideo.com/rtc_demo_special`** 作为测试服务器域名，仅提供跑通测试服务，无法保障正式需求。<br>
+        <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_15703882819ea292a62bd928120e3047.png" width="500px" >
 
-进入 `scene-core/gradle.properties` 文件，填写 **LoginUrl**。
-
-当前你可以使用 **`https://common.rtc.volcvideo.com/rtc_demo_special/login`** 作为测试服务器域名，仅提供跑通测试服务，无法保障正式需求。
-
-<img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_91dfc908f446421eb8b8c8ef7691392b" width="500px" >
-
-3. **填写 APPID、APPKey、AccessKeyID 和 SecretAccessKey**
-	
-
-进入 `component/joinrtsparams` 目录下 `gradle.properties`文件，填写 **APPID、APPKey、AccessKeyID、SecretAccessKey**。
-
-> ACCOUNT\_ID 和 VOD\_SPACE 为录制相关功能配置参数，此 Demo 无录制功能，填 `1` 即可。
-
-<img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_19af7580a98974c9ad8de6722039f1b3" width="500px" >
-
+3. **填写 APPID、APPKey、AccessKeyID 和 SecretAccessKey**<br>
+	进入根目录下 `gradle.properties`文件，填写 **APPID、APPKey、AccessKeyID、SecretAccessKey**。<br>
+    <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_7de621528819a3a73e847b48f1ff8cee.png" width="500px" >
 ### 步骤 4：编译运行
 
-1. 将手机连接到电脑，并在开发者选项中打开调试功能。连接成功后，设备名称会出现在界面右上方。
-	
+1. 将手机连接到电脑，并在开发者选项中打开调试功能。连接成功后，设备名称会出现在界面右上方。<br>
 	<img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_84b0cf2f7171f15bca721c362d17cb24" width="500px" >
-	
+2. 选择**Run** -> **Run 'app'** ，开始编译。编译成功后你的 Android 设备上会出现新应用。部分手机会出现二次确认，请选择确认安装。<br>
+	<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_9596f5c5e207c22e96070e417594c1e4" width="500px" >
 
-<br>
+## 运行开始界面
 
-2. 选择**Run** -> **Run 'app'** ，开始编译。编译成功后你的 Android 设备上会出现新应用。部分手机会出现二次确认，请选择确认安装。
-	
-
-<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_9596f5c5e207c22e96070e417594c1e4" width="500px" >
-
-运行开始界面如下：
-<br>
-
-<img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_98b4406e75bd29c46ba7151bc9a4e354" width="200px" >
-<br>
-
-<br>
-
-<br>
-
-<br>
+<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_1d786b9c12649eb14ffeb14a291aaa0a" width="200px" >

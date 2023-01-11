@@ -682,6 +682,7 @@
         if (noticeModel.data && [noticeModel.data isKindOfClass:[NSDictionary class]]) {
             model = [VideoChatUserModel yy_modelWithJSON:noticeModel.data[@"user_info"]];
             message = [NSString stringWithFormat:@"%@", noticeModel.data[@"message"]];
+            message = [message stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         }
         if (block) {
             block(model, message);

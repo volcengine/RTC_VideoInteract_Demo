@@ -144,7 +144,7 @@
     if (type == 3) {
         [[ToastComponent shareToastComponent] showWithMessage:@"直播间内容违规，直播间已被关闭" delay:0.8];
     } else if (type == 2 && [self isHost]) {
-        [[ToastComponent shareToastComponent] showWithMessage:@"本次体验时间已超过20mins" delay:0.8];
+        [[ToastComponent shareToastComponent] showWithMessage:@"本次体验时间已超过20分钟" delay:0.8];
     } else {
         if (![self isHost]) {
             [[ToastComponent shareToastComponent] showWithMessage:@"直播间已结束" delay:0.8];
@@ -293,6 +293,7 @@
     if ([self isHost] && reply == 2) {
         NSString *message = [NSString stringWithFormat:@"观众%@拒绝了你的邀请", hostUserModel.name];
         [[ToastComponent shareToastComponent] showWithMessage:message];
+        [self.userListComponent update];
     }
 
     if ([self isHost]) {
@@ -709,7 +710,7 @@
 
 - (void)addIMMessage:(BOOL)isJoin
            userModel:(VideoChatUserModel *)userModel {
-    NSString *unitStr = isJoin ? @"加入了房间" : @"离开房间";
+    NSString *unitStr = isJoin ? @"加入了房间" : @"退出了房间";
     BaseIMModel *imModel = [[BaseIMModel alloc] init];
     imModel.message = [NSString stringWithFormat:@"%@ %@", userModel.name, unitStr];
     [self.imComponent addIM:imModel];

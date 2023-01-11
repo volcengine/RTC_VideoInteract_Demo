@@ -147,6 +147,14 @@
     }
 }
 
+- (void)resetCamera {
+    // 重置相机为前置
+    if (self.cameraID == ByteRTCCameraIDBack) {
+        [self switchCamera];
+    }
+}
+
+
 - (void)switchCamera {
     if (self.cameraID == ByteRTCCameraIDFront) {
         self.cameraID = ByteRTCCameraIDBack;

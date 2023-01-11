@@ -71,6 +71,11 @@ typedef void(^VideoChatNetworkQualityChangeBlock)(VideoChatNetworkQualityStatus 
 - (void)switchCamera;
 
 /*
+ * Reset the camera
+ */
+- (void)resetCamera;
+
+/*
  * Set the camera is front
  */
 - (void)updateCameraID:(BOOL)isFront;

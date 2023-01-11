@@ -13,4 +13,4 @@
     android:background="@drawable/item_video_chat_bg"
     android:textColor="@color/white"
     android:textSize="14dp"
-    tools:text="Cici 进入了房间" />
+    tools:text="Cici 加入了房间" />

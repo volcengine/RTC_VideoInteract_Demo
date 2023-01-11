@@ -69,9 +69,9 @@
 
 #pragma mark - VideoChatRoomUserListtCellDelegate
 
-- (void)VideoChatRoomUserListtCell:(VideoChatRoomUserListtCell *)VideoChatRoomUserListtCell clickButton:(id)model {
-    if ([self.delegate respondsToSelector:@selector(VideoChatRoomAudienceListsView:clickButton:)]) {
-        [self.delegate VideoChatRoomAudienceListsView:self clickButton:model];
+- (void)videoChatRoomUserListtCell:(VideoChatRoomUserListtCell *)VideoChatRoomUserListtCell clickButton:(UIButton *)button model:(VideoChatUserModel *)model {
+    if ([self.delegate respondsToSelector:@selector(videoChatRoomAudienceListsView:clickButton:model:)]) {
+        [self.delegate videoChatRoomAudienceListsView:self clickButton:button model:model];
     }
 }
 

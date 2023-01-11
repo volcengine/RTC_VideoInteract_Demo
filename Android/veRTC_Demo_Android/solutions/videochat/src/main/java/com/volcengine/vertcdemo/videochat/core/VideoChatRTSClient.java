@@ -321,8 +321,12 @@ public class VideoChatRTSClient extends RTSBaseClient {
     }
 
     public void reconnectToServer(IRequestCallback<JoinRoomResponse> callback) {
+        reconnectToServer("", callback);
+    }
+
+    public void reconnectToServer(String roomId, IRequestCallback<JoinRoomResponse> callback) {
         JsonObject params = getCommonParams(CMD_RECONNECT);
-        sendServerMessageOnNetwork("", params, JoinRoomResponse.class, callback);
+        sendServerMessageOnNetwork(roomId, params, JoinRoomResponse.class, callback);
     }
 
     public void requestClearUser(IRequestCallback<VideoChatResponse> callback) {

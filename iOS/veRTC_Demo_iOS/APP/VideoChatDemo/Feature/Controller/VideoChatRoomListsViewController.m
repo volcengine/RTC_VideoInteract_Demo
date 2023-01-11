@@ -91,6 +91,7 @@
 - (void)createButtonAction {
     __weak __typeof(self) wself = self;
     NSString *roomName = [NSString stringWithFormat:@"%@的直播间", [LocalUserComponent userModel].name];
+    [[ToastComponent shareToastComponent] showLoading];
     [VideoChatRTMManager createRoom:roomName
                                   userName:[LocalUserComponent userModel].name
                                bgImageName:@""
@@ -98,6 +99,7 @@
                                              VideoChatRoomModel * _Nonnull roomModel,
                                              VideoChatUserModel * _Nonnull hostUserModel,
                                              RTMACKModel * _Nonnull model) {
+        [[ToastComponent shareToastComponent] dismiss];
         if (model.result) {
             VideoChatCreateRoomViewController *next = [[VideoChatCreateRoomViewController alloc]
                                                        initWithRoomModel:roomModel
