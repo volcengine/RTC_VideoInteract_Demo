@@ -129,6 +129,8 @@ public class VideoChatCreateRoomActivity extends BaseActivity implements View.On
     @Override
     public void finish() {
         super.finish();
+        //华为P50关闭时如果为后置摄像头下次有可能打开失败
+        VideoChatRTCManager.ins().switchCamera(true);
         SolutionDemoEventManager.unregister(this);
     }
 
