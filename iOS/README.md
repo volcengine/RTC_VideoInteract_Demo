@@ -41,7 +41,7 @@
 2. 执行 `pod install` 命令构建工程<br>
 	 <img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/podinstall.jpg" width="500px" >
 3. 进入 `RTC_VideoInteract_Demo/iOS/RTCSolution` 根目录，使用 Xcode 打开 `RTCSolution.xcworkspace`<br>
-	<img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_b479ae8a464cf80f054ca9f9ac6bc2bc" width="500px" >
+	<img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/RTCSolution.png" width="500px" >
 
 4. 在 Xcode 中打开 `Pods/Development Pods/Core/BuildConfig.h` 文件<br>
     <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_0548899b170c606d3fe53adb7c670d4a.jpeg" width="500px" >	
@@ -59,13 +59,13 @@
 	img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/60a2af60-03d1-48cf-8874-75f9751efd20.png" width="500px" >	
 
 2. 登录 Apple ID。<br>
-	2.1 选择 Xcode 页面左上角 **Xcode** > **Preferences**，或通过快捷键 **Command** + **,**  打开 Preferences。<br>
+	2.1 选择 Xcode 页面左上角 **Xcode** > **Settings**，或通过快捷键 **Command** + **,**  打开 Settings。<br>
 	2.2 选择 **Accounts**，点击左下部 **+**，选择 Apple ID 进行账号登录。<br>
 	<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_f3be9f246513f73bf526da3b5992b603" width="500px" >
 
 3. 配置开发者证书。<br>
 	3.1 单击 Xcode 左侧导航栏中的 `RTCSolution` 项目，单击 `TARGETS` 下的 `RTCSolution` 项目，选择 **Signing & Capabilities** > **Automatically manage signing** 自动生成证书<br>
-		<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_df6ff59c20b42530f696646d08294cc1" width="500px" >
+		<img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/8b11f97e-723f-4a37-a628-dadf3b9e0a96.png" width="500px" >
 
 	3.2 在 **Team** 中选择 Personal Team。<br>
 		<img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/54af18a8-8542-46f8-abb4-f421c7bcadcf.png" width="500px" >
@@ -78,7 +78,7 @@
 
 选择 **Product** > **Run**， 开始编译。编译成功后你的 iOS 设备上会出现新应用。若为免费苹果账号，需先在`设置->通用-> VPN与设备管理 -> 描述文件与设备管理`中信任开发者 APP。
 
-<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_702f3f683b490eb357f7e6e2a0c3076e" width="500px" >
+<img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/lpqubqnuln/092f17e7-7668-479c-a09b-1fdd65d42a9c.png" width="500px" >
 
 ## 运行开始界面
 
